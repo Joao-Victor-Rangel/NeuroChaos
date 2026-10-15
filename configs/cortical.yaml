@@ -1,0 +1,39 @@
+# Estágio INTERMEDIÁRIO do guia (§7): piramidal com adaptação (corrente M) e interneurônio de
+# disparo rápido, canais Traub–Miles + M em NMODL (mod/), 36 °C. Herda o resto de mvp.yaml.
+# Compile os mecanismos antes:  PATH=~/neuron-gcc-wrapper:$PATH nrnivmodl mod
+inherit: configs/mvp.yaml
+calibration_file: configs/calibration_cortical.json
+
+experiment:
+  name: cortical
+
+simulation:
+  celsius: 36.0
+  v_init_mv: -70.0
+
+cells:
+  E:                       # RS — regular spiking (Pospischil et al. 2008), com corrente M
+    diam_um: 61.4
+    L_um: 61.4
+    Ra: 100.0
+    cm: 1.0
+    mechs:
+      pas: {g: 1.0e-4, e: -70.0}
+      na_tm: {gbar: 0.05, vt: -56.2}
+      kd_tm: {gbar: 0.005, vt: -56.2}
+      im_pos: {gbar: 7.0e-5, taumax: 1000.0}
+    ions: {na: 50.0, k: -90.0}
+  I:                       # FS — fast spiking, sem corrente M
+    diam_um: 67.0
+    L_um: 67.0
+    Ra: 100.0
+    cm: 1.0
+    mechs:
+      pas: {g: 1.5e-4, e: -70.0}
+      na_tm: {gbar: 0.05, vt: -57.9}
+      kd_tm: {gbar: 0.01, vt: -57.9}
+    ions: {na: 50.0, k: -90.0}
+
+synapses:                  # cinéticas a ~36 °C (pontos de partida)
+  AMPA: {tau1: 0.2, tau2: 2.0, e: 0.0}
+  GABA: {tau1: 0.3, tau2: 6.0, e: -75.0}

@@ -1,0 +1,173 @@
+{
+ "created": "2026-10-14T17:32:49",
+ "config_updates": {
+  "background": {
+   "rheobase_nA": {
+    "E": 0.25,
+    "I": 0.33
+   }
+  },
+  "coupling": {
+   "K_base_uS": 0.001
+  }
+ },
+ "fi_curve": {
+  "E": {
+   "rheobase_repetitive_nA": 0.25,
+   "threshold_single_spike_nA": 0.21,
+   "min_repetitive_rate_hz": 3.3333333333333335,
+   "ap_halfwidth_ms": 0.6999999999993634,
+   "v_rest_mV": -70.39274413109506,
+   "adaptation_index_1.5x": 0.006634062884043484,
+   "first_isi_ms_1.5x": 14.60000000000332,
+   "last_isi_ms_1.5x": 33.25000000012096
+  },
+  "I": {
+   "rheobase_repetitive_nA": 0.33,
+   "threshold_single_spike_nA": 0.33,
+   "min_repetitive_rate_hz": 14.666666666666666,
+   "ap_halfwidth_ms": 0.5999999999994543,
+   "v_rest_mV": -69.99995584557362,
+   "adaptation_index_1.5x": -1.2761775915310703e-05,
+   "first_isi_ms_1.5x": 15.450000000003513,
+   "last_isi_ms_1.5x": 15.400000000056025
+  }
+ },
+ "criteria": {
+  "rate_E_mean": [
+   1.0,
+   15.0
+  ],
+  "rate_I_mean": [
+   5.0,
+   60.0
+  ],
+  "rate_E_max_le": 60.0,
+  "frac_silent_E_le": 0.5
+ },
+ "sweep": [
+  {
+   "w_uS": 0.0,
+   "seed": 1,
+   "rate_E_mean": 7.383928571428571,
+   "rate_I_mean": 10.54642857142857,
+   "rate_E_max": 13.5,
+   "frac_silent_E": 0.0,
+   "plv_gamma_mean": 0.25096490740696376,
+   "valid": true
+  },
+  {
+   "w_uS": 0.0,
+   "seed": 2,
+   "rate_E_mean": 7.529464285714286,
+   "rate_I_mean": 9.535714285714286,
+   "rate_E_max": 14.0,
+   "frac_silent_E": 0.0,
+   "plv_gamma_mean": 0.25768230381480123,
+   "valid": true
+  },
+  {
+   "w_uS": 0.001,
+   "seed": 1,
+   "rate_E_mean": 8.7125,
+   "rate_I_mean": 15.196428571428571,
+   "rate_E_max": 15.5,
+   "frac_silent_E": 0.0,
+   "plv_gamma_mean": 0.24969768284241312,
+   "valid": true
+  },
+  {
+   "w_uS": 0.001,
+   "seed": 2,
+   "rate_E_mean": 8.870535714285714,
+   "rate_I_mean": 13.871428571428572,
+   "rate_E_max": 16.5,
+   "frac_silent_E": 0.0,
+   "plv_gamma_mean": 0.2608780820672923,
+   "valid": true
+  },
+  {
+   "w_uS": 0.002,
+   "seed": 1,
+   "rate_E_mean": 11.158928571428572,
+   "rate_I_mean": 23.49642857142857,
+   "rate_E_max": 25.5,
+   "frac_silent_E": 0.0,
+   "plv_gamma_mean": 0.25772243423936897,
+   "valid": true
+  },
+  {
+   "w_uS": 0.002,
+   "seed": 2,
+   "rate_E_mean": 11.444642857142858,
+   "rate_I_mean": 22.525,
+   "rate_E_max": 28.0,
+   "frac_silent_E": 0.0,
+   "plv_gamma_mean": 0.25698722213571845,
+   "valid": true
+  },
+  {
+   "w_uS": 0.004,
+   "seed": 1,
+   "rate_E_mean": 123.64464285714286,
+   "rate_I_mean": 184.66071428571428,
+   "rate_E_max": 295.0,
+   "frac_silent_E": 0.014285714285714285,
+   "plv_gamma_mean": 0.25742641138301214,
+   "valid": false
+  },
+  {
+   "w_uS": 0.004,
+   "seed": 2,
+   "rate_E_mean": 121.4375,
+   "rate_I_mean": 180.88214285714287,
+   "rate_E_max": 282.5,
+   "frac_silent_E": 0.019642857142857142,
+   "plv_gamma_mean": 0.25115586515806443,
+   "valid": false
+  },
+  {
+   "w_uS": 0.008,
+   "seed": 1,
+   "rate_E_mean": 237.25,
+   "rate_I_mean": 303.50714285714287,
+   "rate_E_max": 395.5,
+   "frac_silent_E": 0.02857142857142857,
+   "plv_gamma_mean": 0.2622177698291466,
+   "valid": false
+  },
+  {
+   "w_uS": 0.008,
+   "seed": 2,
+   "rate_E_mean": 238.73839285714286,
+   "rate_I_mean": 301.90714285714284,
+   "rate_E_max": 394.5,
+   "frac_silent_E": 0.039285714285714285,
+   "plv_gamma_mean": 0.2526301345927788,
+   "valid": false
+  },
+  {
+   "w_uS": 0.016,
+   "seed": 1,
+   "rate_E_mean": 217.65892857142856,
+   "rate_I_mean": 303.62857142857143,
+   "rate_E_max": 383.0,
+   "frac_silent_E": 0.13035714285714287,
+   "plv_gamma_mean": 0.2527423156155295,
+   "valid": false
+  },
+  {
+   "w_uS": 0.016,
+   "seed": 2,
+   "rate_E_mean": 216.56160714285716,
+   "rate_I_mean": 294.6714285714286,
+   "rate_E_max": 383.5,
+   "frac_silent_E": 0.15178571428571427,
+   "plv_gamma_mean": 0.2344046684015413,
+   "valid": false
+  }
+ ],
+ "max_valid_w_uS": 0.002,
+ "K_max_in_grid": 2.0,
+ "note": "Calibra\u00e7\u00e3o do MVP com dura\u00e7\u00e3o de depura\u00e7\u00e3o; repetir com a dura\u00e7\u00e3o cient\u00edfica antes de concluir."
+}

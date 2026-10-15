@@ -1,0 +1,19 @@
+# Grade do guia §8.4 com duração de DEPURAÇÃO (4 s): valida o pipeline e a estatística,
+# mas é insuficiente para inferências robustas de PAC/caos. Ver grid_science.yaml.
+name: grid_debug
+base_config: configs/mvp.yaml
+overrides:
+  simulation.save_traces: false   # grade: salva spikes e sinais, não traços de V (disco)
+  simulation.duration_ms: 4000
+axes:
+  connectome.topology: [distance, shuffled, homogeneous]
+  coupling.K: [0.5, 1.0, 1.5, 2.0]
+  stimulus.theta.amp_nA: [0.0, 0.02, 0.04, 0.08]
+seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+seed_offsets: {conn: 0, stim: 1000, loc: 2000}
+# Controles de gamma (guia §7): só gamma e theta+gamma, topologia por distância, K = 1.
+controls:
+  base: {connectome.topology: distance, coupling.K: 1.0}
+  axes:
+    stimulus.theta.amp_nA: [0.0, 0.02, 0.04, 0.08]
+    stimulus.gamma.amp_nA: [0.005, 0.01, 0.02]

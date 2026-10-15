@@ -1,0 +1,22 @@
+# Mesma grade com duração científica (guia §7: 60–120 s após transiente).
+# Custo estimado nesta máquina (WSL, 4 núcleos): ~1 min por job → ~3–4 h para 600 jobs.
+name: grid_science
+base_config: configs/mvp.yaml
+overrides:
+  simulation.save_traces: false   # grade: salva spikes e sinais, não traços de V (disco)
+  simulation.duration_ms: 62000
+  simulation.transient_ms: 2000
+  chaos.t_perturb_ms: [5000.0, 10000.0, 15000.0]
+  analysis.plv.min_shift_s: 2.0
+  analysis.pac.min_shift_s: 2.0
+axes:
+  connectome.topology: [distance, shuffled, homogeneous]
+  coupling.K: [0.5, 1.0, 1.5, 2.0]
+  stimulus.theta.amp_nA: [0.0, 0.02, 0.04, 0.08]
+seeds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+seed_offsets: {conn: 0, stim: 1000, loc: 2000}
+controls:
+  base: {connectome.topology: distance, coupling.K: 1.0}
+  axes:
+    stimulus.theta.amp_nA: [0.0, 0.02, 0.04, 0.08]
+    stimulus.gamma.amp_nA: [0.005, 0.01, 0.02]

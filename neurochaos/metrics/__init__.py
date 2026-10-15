@@ -1,0 +1,1 @@
+"""Métricas de sincronização, acoplamento, espectro e caos (guia §8)."""

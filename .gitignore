@@ -1,0 +1,19 @@
+# Dados clínicos/brutos e arquivos grandes nunca entram no Git (guia §3)
+data/raw/
+data/processed/
+data/derivatives/
+data/electrophysiology/
+data/atlases/
+data/connectomes/*.csv
+data/connectomes/*.tsv
+checkpoints/
+results/
+__pycache__/
+*.pyc
+.pytest_cache/
+x86_64/
+*.nwb
+*.nii
+*.nii.gz
+*.dcm
+data/connectomes/mica_*/

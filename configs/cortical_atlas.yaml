@@ -1,0 +1,67 @@
+# Rede cortical (RS + FS, canais NMODL) sobre o CONECTOMA REAL do MICA-MICs (Desikan-Killiany, 70 regiões).
+# Conexões longas: P a partir de log1p(SC/média); atrasos = comprimento das fibras / velocidade.
+inherit: configs/cortical.yaml
+calibration_file: configs/calibration_cortical_atlas.json
+
+experiment:
+  name: cortical_atlas
+
+simulation:
+  dt_ms: 0.05                # limite superior da faixa do guia; convergência conferida com dt/2
+  coreneuron: true           # CoreNEURON: 1,5x mais rápido, spikes idênticos ao NEURON com random123
+                             # (results/bench_coreneuron). Exige `nrnivmodl -coreneuron mod`. Os resultados em
+                             # results/cortical_subjects/K2_th0 foram gerados com false (NEURON, outro gerador de ruído).
+  duration_ms: 3000
+  transient_ms: 1000
+
+connectome:
+  topology: atlas            # atlas | shuffled | homogeneous (controles sobre a mesma fonte)
+  source: atlas
+  atlas_dir: data/connectomes/mica_aparc/group
+  atlas_transform: log
+  p0: 0.20
+  velocity_m_per_s: 5.0
+
+populations:
+  n_E_per_region: 8
+  n_I_per_region: 2
+
+local_connectivity:          # pesos ~10x os do MVP: área de membrana ~10x maior (61-67 µm vs 18,8 µm)
+  delay_ms: 1.0
+  EE: {prob: 0.3, weight_uS: 0.002}
+  EI: {prob: 0.5, weight_uS: 0.004}
+  IE: {prob: 0.6, weight_uS: 0.008}
+  II: {prob: 0.5, weight_uS: 0.004}
+
+coupling:
+  K: 1.0
+  K_base_uS: 0.002           # [calib]
+  EI_ratio: 1.0
+
+background:
+  mode: poisson
+  rate_hz: 400.0
+  weight_uS: {E: 0.002, I: 0.002}
+  rheobase_nA: {E: 0.25, I: 0.33}       # da curva F–I das células corticais (results/calibration_cortical)
+  bias_frac_rheobase: {E: 0.5, I: 0.5}
+  bias_cv: 0.1
+
+analysis:
+  plv: {n_surrogates: 0, min_shift_s: 0.5}     # 2415 pares: inferência por comparação entre condições
+  pac: {phase_band: [4.0, 8.0], amp_band: [35.0, 45.0], n_bins: 18, n_surrogates: 50, min_shift_s: 0.5}
+
+chaos:
+  enabled: false
+  targets_per_region: 0
+
+calibration:
+  fi_amax_nA: 1.0
+  fi_step_nA: 0.01
+  sweep_K_base_uS: [0.0, 0.001, 0.002, 0.004, 0.008, 0.016]
+  seeds: [1, 2]
+  K_max_in_grid: 2.0
+  criteria:                  # faixas de taxa para córtex em vigília (pontos de partida)
+    rate_E_mean: [1.0, 15.0]
+    rate_I_mean: [5.0, 60.0]
+    rate_E_max_le: 60.0
+    frac_silent_E_le: 0.5

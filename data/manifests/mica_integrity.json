@@ -1,0 +1,84 @@
+{
+ "n_subjects": 50,
+ "subjects": [
+  "sub-HC001",
+  "sub-HC002",
+  "sub-HC003",
+  "sub-HC004",
+  "sub-HC005",
+  "sub-HC006",
+  "sub-HC007",
+  "sub-HC008",
+  "sub-HC009",
+  "sub-HC010",
+  "sub-HC011",
+  "sub-HC012",
+  "sub-HC013",
+  "sub-HC014",
+  "sub-HC015",
+  "sub-HC016",
+  "sub-HC017",
+  "sub-HC018",
+  "sub-HC019",
+  "sub-HC020",
+  "sub-HC021",
+  "sub-HC022",
+  "sub-HC023",
+  "sub-HC024",
+  "sub-HC025",
+  "sub-HC026",
+  "sub-HC027",
+  "sub-HC028",
+  "sub-HC029",
+  "sub-HC030",
+  "sub-HC031",
+  "sub-HC032",
+  "sub-HC033",
+  "sub-HC034",
+  "sub-HC035",
+  "sub-HC036",
+  "sub-HC037",
+  "sub-HC038",
+  "sub-HC039",
+  "sub-HC040",
+  "sub-HC041",
+  "sub-HC042",
+  "sub-HC043",
+  "sub-HC044",
+  "sub-HC045",
+  "sub-HC046",
+  "sub-HC047",
+  "sub-HC048",
+  "sub-HC049",
+  "sub-HC050"
+ ],
+ "parcellations": {
+  "schaefer200": {
+   "n_nodes": 200,
+   "timepoints": {
+    "min": 695,
+    "max": 795
+   },
+   "fc_recomputed_max_abs_err": 8.465443095406755e-06,
+   "sc_density": {
+    "mean": 0.9627748743718593,
+    "min": 0.7830653266331659,
+    "max": 0.984321608040201
+   }
+  },
+  "aparc": {
+   "n_nodes": 70,
+   "timepoints": {
+    "min": 695,
+    "max": 795
+   },
+   "fc_recomputed_max_abs_err": 7.604061577515253e-06,
+   "sc_density": {
+    "mean": 0.9808364389233953,
+    "min": 0.8372670807453416,
+    "max": 0.9946169772256729
+   }
+  }
+ },
+ "problems": []
+}

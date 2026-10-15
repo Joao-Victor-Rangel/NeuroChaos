@@ -1,0 +1,14 @@
+# Ambiente da parte de aprendizado (baselines FC→SC e GAN). Separado do NEURON para evitar
+# conflitos binários (guia §9). Criado no WSL2 como "neurochaos-ml".
+# PyTorch com CUDA: no WSL o /tmp é tmpfs pequeno → instale com TMPDIR apontando para o disco:
+#   TMPDIR=~/pip_tmp pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cu124
+name: neurochaos-ml
+channels: [conda-forge]
+dependencies:
+  - python=3.11
+  - numpy
+  - scipy
+  - pandas
+  - matplotlib
+  - pyyaml
+  - pip

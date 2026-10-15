@@ -1,0 +1,128 @@
+# NeuroChaos — MVP (guia §7, "Configuração inicial do MVP").
+# Todos os valores são HIPÓTESES/pontos de partida, não parâmetros fisiológicos validados.
+# Valores marcados [calib] são sobrescritos por `calibration_file` quando ele existe.
+
+calibration_file: configs/calibration_mvp.json
+
+experiment:
+  name: mvp
+
+simulation:
+  dt_ms: 0.025               # comparar com dt/2 (scripts/convergence_dt.py)
+  duration_ms: 4000          # 2–4 s: SOMENTE depuração. Científico: 60–120 s após transiente
+  transient_ms: 1000         # descartado de todas as análises
+  record_step_ms: 0.1        # traços de V/corrente de uma amostra estratificada
+  signal_fs_hz: 1000         # passo dos sinais agregados (≠ dt do integrador)
+  n_trace_cells_per_pop: 1
+  record_all_v: true         # V de todas as células a 1 kHz (necessário p/ trajetórias gêmeas)
+  celsius: 6.3               # HH clássico: NÃO elevar sem reparametrizar a cinética
+  v_init_mv: -65.0
+  spike_threshold_mv: 0.0
+
+seeds:                       # sementes separadas: conectividade, estímulo/ruído, posicionamento
+  conn: 1
+  stim: 1
+  loc: 1
+
+geometry:
+  scale: 1.0                 # escala isotrópica das distâncias (manipulação da geometria macroscópica)
+  regions:                   # 4 regiões SINTÉTICAS (coordenadas ilustrativas em mm, não de atlas)
+    - {label: Lfront, xyz_mm: [-35.0, 45.0, 25.0]}
+    - {label: Rfront, xyz_mm: [35.0, 45.0, 25.0]}
+    - {label: Locc,   xyz_mm: [-30.0, -70.0, 10.0]}
+    - {label: Rocc,   xyz_mm: [30.0, -70.0, 10.0]}
+
+connectome:
+  topology: distance         # distance | shuffled | homogeneous | atlas
+  ell_mm: 50.0               # testar 20, 50, 100
+  p0: 0.10                   # testar 0.05, 0.10, 0.20
+  pmax: 0.5
+  velocity_m_per_s: 5.0      # sensibilidade: 1–10 m/s
+  shuffle_delays: false      # atrasos permanecem presos à distância física
+  atlas_dir: data/connectomes
+
+cells:                       # HH de um compartimento (mecanismo `hh` do NEURON)
+  E:
+    diam_um: 18.8
+    L_um: 18.8
+    Ra: 123.0
+    cm: 1.0
+    hh: {gnabar: 0.12, gkbar: 0.036, gl: 0.0003, el: -54.3}
+  I:
+    diam_um: 18.8
+    L_um: 18.8
+    Ra: 123.0
+    cm: 1.0
+    hh: {gnabar: 0.12, gkbar: 0.036, gl: 0.0003, el: -54.3}
+
+populations:
+  n_E_per_region: 8          # 8 E + 2 I por região = 40 neurônios (80/20)
+  n_I_per_region: 2
+
+synapses:                    # Exp2Syn: tau em ms, e em mV; pesos em µS (unidade do Exp2Syn)
+  AMPA: {tau1: 0.2, tau2: 3.0, e: 0.0}
+  GABA: {tau1: 0.5, tau2: 8.0, e: -80.0}
+
+local_connectivity:
+  delay_ms: 1.0
+  EE: {prob: 0.3, weight_uS: 0.0002}
+  EI: {prob: 0.5, weight_uS: 0.0004}
+  IE: {prob: 0.6, weight_uS: 0.0008}
+  II: {prob: 0.5, weight_uS: 0.0004}
+
+coupling:
+  K: 1.0                     # multiplicador de K_base (grade: 0.5, 1.0, 1.5, 2.0)
+  K_base_uS: 0.0002          # [calib] peso base das conexões longas E→E
+  EI_ratio: 1.0              # peso longo E→I relativo ao E→E
+
+background:
+  mode: poisson              # poisson (ruído congelado) | none (determinístico)
+  rate_hz: 150.0             # escolhido para taxa basal E ~15 Hz sem acoplamento (results/dev)
+  weight_uS: {E: 0.0003, I: 0.0003}
+  rheobase_nA: {E: 0.07, I: 0.07}       # [calib] medido pela curva F–I
+  bias_frac_rheobase: {E: 0.5, I: 0.5}  # I_bias = fração × reobase × (1 + cv·N(0,1))
+  bias_cv: 0.1
+
+stimulus:
+  targets: [E, I]
+  waveform_dt_ms: 0.5        # resolução do vetor tocado em IClamp.amp (interpolação contínua)
+  theta: {amp_nA: 0.0, freq_hz: 6.0, phase_rad: 0.0}
+  gamma: {amp_nA: 0.0, freq_hz: 40.0, phase_rad: 0.0}
+
+analysis:
+  rate_smoothing_ms: 2.0
+  filter_edge_s: 0.5
+  bands:                     # definidas a priori
+    theta: [4.0, 8.0]
+    gamma: [35.0, 45.0]
+  psd: {nperseg_s: 2.0}
+  plv: {n_surrogates: 200, min_shift_s: 0.5}
+  pac: {phase_band: [4.0, 8.0], amp_band: [35.0, 45.0], n_bins: 18, n_surrogates: 200, min_shift_s: 0.5}
+  primary_metrics:           # pré-especificadas; a correção de Holm é feita sobre elas
+    - rate_E_mean
+    - plv_theta_mean
+    - plv_gamma_mean
+    - pac_mi_mean
+    - lambda_linear
+    - p_diverge_all
+
+chaos:
+  enabled: true
+  targets_per_region: 1
+  t_perturb_ms: [1500.0, 2000.0, 2500.0]   # sempre APÓS o transiente
+  eps_nA: [1.0e-6, 1.0e-4, 1.0e-2]         # pulso de 0,1 ms → δV(0) ≈ 1e-5, 1e-3, 1e-1 mV (linear → tamanho finito)
+  pulse_ms: 0.1
+  horizon_ms: 1000.0
+  envelope_ms: 10.0
+  fit_skip_ms: 5.0
+  floor_mV: 1.0e-10                        # abaixo disso δ é arredondamento numérico (float64)
+  div_threshold_mV: 1.0                    # δ final acima disso = trajetórias não reconvergiram
+calibration:                 # critérios definidos ANTES das análises oscilatórias (guia §7)
+  sweep_K_base_uS: [0.0, 0.0001, 0.0002, 0.0004, 0.0006, 0.0008, 0.0012, 0.0016, 0.0024, 0.0032]
+  seeds: [1, 2, 3]
+  K_max_in_grid: 2.0         # K_base = (maior peso válido) / K_max → a grade inteira fica no regime válido
+  criteria:
+    rate_E_mean: [2.0, 40.0]
+    rate_I_mean: [2.0, 120.0]
+    rate_E_max_le: 120.0
+    frac_silent_E_le: 0.25

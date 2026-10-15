@@ -1,0 +1,2 @@
+source,dataset_version,subject_id,study_id,series_id,modality,image_path,mask_path,spacing_mm,license,split
+mica_mics,micapipe_MICs_v1.1 (OSF j532r; sha256 ac704719…ab348),sub-HC001..sub-HC050,ses-01,-,"SC,edgeLength,FC,timeseries,GD,MPC (schaefer200, aparc)",data/derivatives/mica_mics/micapipe,-,-,CC0-1.0 (citar Royer et al. 2022 Sci Data),ver subjects_split.csv
