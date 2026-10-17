@@ -18,7 +18,8 @@ from .config import resolve
 
 ROOT = "data/derivatives/mica_mics"
 N_SUBCORTICAL = 14  # 7 E + 7 D (tálamo, caudado, putâmen, pálido, hipocampo, amígdala, accumbens)
-LUT = {"schaefer200": "lut_schaefer-200_mics.csv", "aparc": "lut_aparc_mics.csv"}
+LUT = {"schaefer200": "lut_schaefer-200_mics.csv", "schaefer400": "lut_schaefer-400_mics.csv",
+       "aparc": "lut_aparc_mics.csv"}
 KIND_DIR = {"sc": "dwi", "edgeLength": "dwi", "fc": "func", "timeseries": "func",
             "gd": "anat/geo_dist", "mpc": "anat/micro_profiles"}
 KIND_SPACE = {"sc": "dwinative", "edgeLength": "dwinative", "fc": "fsnative", "timeseries": "fsnative",

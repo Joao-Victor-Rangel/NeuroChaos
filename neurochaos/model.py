@@ -233,6 +233,9 @@ class NetworkModel:
         }
         if self.v_all:
             gids = sorted(self.v_all)
+            if len(self.v_all[gids[0]]) == 0:
+                raise RuntimeError("V de todas as células veio vazio: o CoreNEURON não grava Vector.record com Dt "
+                                   "próprio. Use simulation.coreneuron=false quando record_all_v/chaos estiverem ligados.")
             out["vall_gids"] = np.array(gids)
             out["vall"] = np.array([np.array(self.v_all[g]) for g in gids], dtype=np.float64)
             out["vall_dt_ms"] = self.vall_dt

@@ -59,11 +59,24 @@
     "min": 695,
     "max": 795
    },
-   "fc_recomputed_max_abs_err": 8.465443095406755e-06,
+   "fc_recomputed_max_abs_err": 8.465443095379e-06,
    "sc_density": {
     "mean": 0.9627748743718593,
     "min": 0.7830653266331659,
     "max": 0.984321608040201
+   }
+  },
+  "schaefer400": {
+   "n_nodes": 400,
+   "timepoints": {
+    "min": 695,
+    "max": 795
+   },
+   "fc_recomputed_max_abs_err": 8.888859285516304e-06,
+   "sc_density": {
+    "mean": 0.8574604010025062,
+    "min": 0.6281704260651629,
+    "max": 0.9060902255639097
    }
   },
   "aparc": {
@@ -72,7 +85,7 @@
     "min": 695,
     "max": 795
    },
-   "fc_recomputed_max_abs_err": 7.604061577515253e-06,
+   "fc_recomputed_max_abs_err": 7.60406157734872e-06,
    "sc_density": {
     "mean": 0.9808364389233953,
     "min": 0.8372670807453416,

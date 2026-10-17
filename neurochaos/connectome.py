@@ -42,6 +42,18 @@ def to_probabilities(W, p0, pmax):
     return P
 
 
+def match_total(P, total, pmax, n_iter=50):
+    """Reescala P para que a soma (fora da diagonal) seja `total`, respeitando o teto pmax."""
+    P = P.copy()
+    for _ in range(n_iter):
+        s = P.sum()
+        if s <= 0 or abs(s - total) < 1e-6 * total:
+            break
+        P = np.clip(P * (total / s), 0.0, pmax)
+    np.fill_diagonal(P, 0.0)
+    return P
+
+
 def delays_ms(D, velocity_m_per_s):
     # 1 m/s = 1 mm/ms
     return D / velocity_m_per_s
@@ -115,6 +127,9 @@ def build_connectome(cfg):
         W = distance_weights(D, cc["ell_mm"])
 
     P_ref = to_probabilities(W, cc["p0"], cc["pmax"])
+    if cc.get("match_total_P"):
+        # iguala o número esperado de conexões longas entre conectomas (adendo 6, emenda 1): só o padrão muda
+        P_ref = match_total(P_ref, float(cc["match_total_P"]), cc["pmax"])
     if topo == "shuffled":
         P = shuffle_edges(P_ref, rng)
     elif topo == "homogeneous":

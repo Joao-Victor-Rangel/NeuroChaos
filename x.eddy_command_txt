@@ -1,0 +1,1 @@
+/home/joao_victor/miniforge3/envs/neurochaos-eddycuda/bin/eddy_cuda11.0 --imain=x --mask=x --acqp=x --index=x --bvecs=x --bvals=x --out=x --nthr=4

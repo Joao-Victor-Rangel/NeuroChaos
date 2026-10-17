@@ -3,6 +3,8 @@
 import numpy as np
 from scipy.signal import welch
 
+_trapz = getattr(np, "trapezoid", None) or np.trapz  # NumPy 2 renomeou trapz
+
 
 def psd(x, fs_hz, nperseg_s):
     nper = int(min(len(x), round(nperseg_s * fs_hz)))
@@ -12,7 +14,7 @@ def psd(x, fs_hz, nperseg_s):
 
 def band_power(f, p, band):
     m = (f >= band[0]) & (f <= band[1])
-    return float(np.trapz(p[m], f[m])) if m.any() else float("nan")
+    return float(_trapz(p[m], f[m])) if m.any() else float("nan")
 
 
 def summarize(x, fs_hz, nperseg_s, bands, fmax=200.0):

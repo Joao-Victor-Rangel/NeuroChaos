@@ -194,3 +194,167 @@ def train(Xtr, Ytr, Xva, Yva, lam_adv=1.0, lam_l1=100.0, epochs=300, batch=4, lr
 def predict(G, X):
     with torch.no_grad():
         return G(X.to(next(G.parameters()).device)).cpu().numpy()[:, 0]
+
+# ---------------------------------------------------------------- v2: busca aninhada pré-registrada
+class E2E(nn.Module):
+    """Camada aresta-a-aresta (BrainNetCNN, Kawahara et al. 2017): filtro em cruz linha + coluna."""
+
+    def __init__(self, cin, cout, n):
+        super().__init__()
+        self.row = nn.Conv2d(cin, cout, (1, n))
+        self.col = nn.Conv2d(cin, cout, (n, 1))
+
+    def forward(self, x):
+        return self.row(x) + self.col(x)  # (B,C,N,1) + (B,C,1,N) → (B,C,N,N)
+
+
+class BrainNetGen(nn.Module):
+    def __init__(self, cin, n, ch=16, zero_init=True):
+        super().__init__()
+        self.e1, self.e2 = E2E(cin, ch, n), E2E(ch, ch, n)
+        self.act = nn.LeakyReLU(0.2)
+        self.drop = nn.Dropout(0.3)
+        self.out = nn.Conv2d(ch, 1, 1)
+        if zero_init:
+            nn.init.zeros_(self.out.weight)
+            nn.init.zeros_(self.out.bias)
+
+    def forward(self, x):
+        n = x.shape[-1]
+        y = self.drop(self.act(self.e2(self.act(self.e1(x)))))
+        y = _sym(self.out(y))
+        return y * (1 - torch.eye(n, dtype=y.dtype, device=y.device))
+
+
+class GNNGen(nn.Module):
+    """Rede de grafos (adendo, seção B). Nós = regiões; atributos = linhas de FC, GD e MPC + embedding aprendido.
+
+    Passagem de mensagem com adjacência |FC| normalizada por linha; decodificador de aresta simétrico sobre
+    [h_i ⊙ h_j, |h_i − h_j|, FC_ij, GD_ij, desvio do B2_ij]. Entrada no formato da GAN: (B, C, N, N) com canais
+    [FC, GD, MPC, μ, inter, desvio do B2]. Saída: resíduo (B, 1, N, N) simétrico, diagonal zero, iniciado em 0.
+    """
+
+    def __init__(self, n, hidden=32, layers=1, emb=16):
+        super().__init__()
+        self.emb = nn.Parameter(0.1 * torch.randn(n, emb))
+        self.enc = nn.Sequential(nn.Linear(3 * n + emb, hidden), nn.ReLU(), nn.Dropout(0.3), nn.Linear(hidden, hidden))
+        self.mp = nn.ModuleList([nn.Linear(hidden, hidden) for _ in range(layers)])
+        self.dec = nn.Sequential(nn.Linear(2 * hidden + 3, hidden), nn.ReLU(), nn.Linear(hidden, 1))
+        nn.init.zeros_(self.dec[-1].weight)
+        nn.init.zeros_(self.dec[-1].bias)
+        self.register_buffer("iu", torch.triu_indices(n, n, 1))
+
+    def forward(self, x):
+        B, _, n, _ = x.shape
+        fc, gd, mpc, off = x[:, 0], x[:, 1], x[:, 2], x[:, 5]
+        node = torch.cat([fc, gd, mpc, self.emb.unsqueeze(0).expand(B, -1, -1)], dim=-1)
+        h = self.enc(node)
+        A = fc.abs()
+        A = A / (A.sum(-1, keepdim=True) + 1e-8)
+        for lin in self.mp:
+            h = h + torch.relu(lin(A @ h))
+        i, j = self.iu
+        hi, hj = h[:, i], h[:, j]
+        e = torch.cat([hi * hj, (hi - hj).abs(), fc[:, i, j, None], gd[:, i, j, None], off[:, i, j, None]], dim=-1)
+        v = self.dec(e)[..., 0]
+        out = torch.zeros(B, n, n, device=x.device, dtype=x.dtype)
+        out[:, i, j] = v
+        out = out + out.transpose(1, 2)
+        return out[:, None]
+
+
+def corr_loss(pred, true, off):
+    """1 − r (por amostra, triângulo superior) entre desvios finais (off + resíduo)."""
+    n = pred.shape[-1]
+    iu = torch.triu_indices(n, n, 1, device=pred.device)
+    a = (pred + off)[:, 0, iu[0], iu[1]]
+    b = (true + off)[:, 0, iu[0], iu[1]]
+    a = a - a.mean(1, keepdim=True)
+    b = b - b.mean(1, keepdim=True)
+    r = (a * b).sum(1) / (a.norm(dim=1) * b.norm(dim=1) + 1e-8)
+    return (1 - r).mean()
+
+
+def train_v2(Xtr, Ytr, Otr, Xva, Yva, Ova, fc_pool=None, arch="unet", lam_adv=0.0, lam_l1=100.0,
+             lam_corr=0.0, noise_sd=0.02, epochs=200, batch=4, lr=2e-4, eval_every=10, seed=0):
+    """Treino com aumento (FC sorteada de `fc_pool` [S,A,N,N] em arctanh + ruído) e registro de G/D.
+
+    Época 0 (resíduo nulo = B2) concorre na seleção. Retorna (G, info) com a melhor época na validação.
+    """
+    torch.manual_seed(seed)
+    gen = torch.Generator().manual_seed(seed)
+    dev = device()
+    Xtr, Ytr, Otr, Xva = Xtr.to(dev), Ytr.to(dev), Otr.to(dev), Xva.to(dev)
+    pool = fc_pool.to(dev) if fc_pool is not None else None
+    n = Xtr.shape[-1]
+    if arch == "unet":
+        G = UNet(cin=Xtr.shape[1], zero_init=True)
+    elif arch == "brainnet":
+        G = BrainNetGen(Xtr.shape[1], n)
+    elif arch.startswith("gnn"):  # "gnn_h<oculta>_l<camadas>"
+        _, hh, ll = arch.split("_")
+        G = GNNGen(n, hidden=int(hh[1:]), layers=int(ll[1:]))
+    else:
+        raise ValueError(arch)
+    G = G.to(dev)
+    D = PatchD(cin=Xtr.shape[1] + 1).to(dev) if lam_adv > 0 else None
+    og = torch.optim.Adam(G.parameters(), lr=lr, betas=(0.5, 0.999))
+    od = torch.optim.Adam(D.parameters(), lr=lr, betas=(0.5, 0.999)) if D else None
+    bce = nn.BCEWithLogitsLoss()
+    off_va = Ova.numpy()
+    best, best_r, hist = None, -np.inf, []
+    acc = {"g_rec": [], "g_adv": [], "d": []}
+
+    def evaluate(ep):
+        nonlocal best, best_r
+        G.eval()
+        with torch.no_grad():
+            r = _r_dev(G(Xva).cpu().numpy() + off_va, Yva.numpy() + off_va, n)
+        rec = {"epoch": ep, "r_dev_val": r}
+        for k, v in acc.items():
+            rec[k] = float(np.mean(v)) if v else None
+            v.clear()
+        hist.append(rec)
+        if r > best_r:
+            best_r, best = r, copy.deepcopy(G.state_dict())
+
+    evaluate(0)
+    for ep in range(1, epochs + 1):
+        G.train()
+        x_ep = Xtr.clone()
+        if pool is not None:  # uma FC reamostrada por sujeito nesta época
+            pick = torch.randint(0, pool.shape[1], (len(Xtr),), generator=gen).to(dev)
+            x_ep[:, 0] = pool[torch.arange(len(Xtr), device=dev), pick]
+        if noise_sd > 0:
+            x_ep[:, 0:2] += noise_sd * torch.randn(x_ep[:, 0:2].shape, generator=gen).to(dev)
+        perm = torch.randperm(len(Xtr), generator=gen).to(dev)
+        for i in range(0, len(Xtr), batch):
+            idx = perm[i:i + batch]
+            x, y, o = x_ep[idx], Ytr[idx], Otr[idx]
+            fake = G(x)
+            if D is not None:
+                od.zero_grad()
+                pr, pf = D(x, y), D(x, fake.detach())
+                ld = 0.5 * (bce(pr, torch.full_like(pr, 0.9)) + bce(pf, torch.zeros_like(pf)))
+                ld.backward()
+                od.step()
+                acc["d"].append(float(ld))
+            og.zero_grad()
+            lrec = lam_l1 * (fake - y).abs().mean()
+            if lam_corr > 0:
+                lrec = lrec + lam_corr * corr_loss(fake, y, o)
+            lg = lrec
+            if D is not None:
+                pf = D(x, fake)
+                ladv = bce(pf, torch.ones_like(pf))
+                lg = lg + lam_adv * ladv
+                acc["g_adv"].append(float(ladv))
+            lg.backward()
+            og.step()
+            acc["g_rec"].append(float(lrec))
+        if ep % eval_every == 0 or ep == epochs:
+            evaluate(ep)
+    G.load_state_dict(best)
+    G.eval()
+    return G, {"best_r_dev_val": best_r, "best_epoch": max(hist, key=lambda h: h["r_dev_val"])["epoch"],
+               "history": hist}

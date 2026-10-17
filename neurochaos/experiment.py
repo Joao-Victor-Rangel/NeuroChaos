@@ -205,7 +205,8 @@ def run_job(cfg, out_dir, save_arrays=True):
     strobe = {}
     if vmean:
         for lab, v in vmean.items():
-            strobe[lab] = chaos.stroboscopic(t, v, th["freq_hz"], th["phase_rad"])[1]
+            m = min(len(t), len(v))  # CoreNEURON pode gravar 1 amostra a menos que o eixo de tempo
+            strobe[lab] = chaos.stroboscopic(t[:m], v[:m], th["freq_hz"], th["phase_rad"])[1]
 
     arrays = {}
     if cfg["chaos"]["enabled"]:

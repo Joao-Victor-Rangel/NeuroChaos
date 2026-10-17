@@ -148,6 +148,24 @@ data/
    10 sujeitos × 4 conectomas × 20 s. FC lenta simulada × FC do BOLD: própria 0,100 · outra pessoa 0,109 ·
    grupo 0,129 · embaralhada −0,017 (própria vs embaralhada 10/10, p_holm = 0,035; vs outra/grupo n.s.).
    **Replica o resultado do Hopf com um modelo biofísico independente.**
+5c. [x] **Rede NEURON com 50 sujeitos** (CoreNEURON, `results/cortical_subjects/K2_th0_core` e `K2_th0.1_core`):
+   espontâneo — FC lenta × BOLD: própria 0,122 · outra 0,110 · grupo 0,152 · embaralhada −0,024 (própria vs outra
+   p_holm = 0,24; vs embaralhada 50/50, p ≈ 1e-14; grupo > própria, p ≈ 1e-6). Theta 0,1 nA: 0,177 · 0,177 · 0,200 ·
+   0,012; PAC ~10× maior com theta, mas igual com conectoma embaralhado (vem da dinâmica local, não da topologia).
+5d. [x] **Adendo pré-registrado** (`docs/preregistro_adendo_modelos.md`, `results/escada/`, Holm nos 3 primários):
+   - Busca aninhada GAN/BrainNetCNN (`docs/preregistro_gan_nested.md`): r_desvio 0,052 vs B2 0,040, 37/50, p = 0,003;
+     identificação 16 %. Escolhida BrainNetCNN + perda de correlação; o adversarial não ajudou. Exploratório.
+   - GNN: 0,052 vs 0,040, p = 0,041 (p_holm 0,041); identificação 16 %. Perda de correlação melhor em 8/8 pares.
+   - PLS de kernel: r_desvio 0,078 (p_holm 0,021) porém identificação 0 %: ganho populacional, não individual
+     (post hoc: previsões 4× mais parecidas entre si que as verdades) → identificação é a métrica de individualidade.
+   - Curva de aprendizado: B2 satura em N = 10; PLS cresce até N = 40.
+   - Conectividade efetiva (Hopf linearizado, emenda 1): FC × 2ª metade 0,207 → 0,330 (teto 0,552), mas identificação
+     estrutural 2 % e r_desvio 0,015 < B2 (p_holm 0,003): a individualidade funcional não aponta para a SC individual.
+   - Caos na rede cortical (10 sujeitos): λ ≈ −5/s (perto da neutralidade), divergência finita 1–7 %; própria =
+     embaralhada (p > 0,3). Sem evidência de caos determinístico.
+5e. [x] **Robustez de parcelação**: B2 identifica 2 % (Desikan, 70), 12 % (Schaefer-200), 22 % (Schaefer-400; p = 4e-9) —
+   a informação individual cresce com a resolução. Hopf na Desikan: própria 0,333 = outra 0,333; embaralhada 0,036;
+   supera a correlação direta SC×FC (0,304).
 6. [ ] **Você**: conta no BALSA + aceite dos termos do HCP-YA (pode levar dias se houver restritos).
 7. [ ] Replicar no HCP (teste final por família) e, depois, MEG para a escala rápida.
 
